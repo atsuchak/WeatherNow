@@ -105,15 +105,41 @@
             }
         }
 
+        // --- MODIFIED: toggleTheme function ---
         function toggleTheme() {
             document.documentElement.classList.toggle('dark');
+            
+            // Get both the icon and text elements
+            const themeIcon = document.getElementById('themeIcon');
             const themeText = document.getElementById('themeText');
+            
+            // Check if the 'dark' class is NOW present
             if (document.documentElement.classList.contains('dark')) {
-                themeText.textContent = '☀️ Light Mode';
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Light Mode';
             } else {
-                themeText.textContent = '🌙 Dark Mode';
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'Dark Mode';
             }
         }
+
+        // --- NEW: Mobile Menu Functions ---
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function closeMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.add('hidden');
+        }
+
+        function handleMobileLocationClick() {
+            getLocationWeather(); // Call the existing function
+            closeMobileMenu();  // Close menu after clicking
+        }
+        // --- END: Mobile Menu Functions ---
+
 
         async function searchCity() {
             // Now we read from cityInput, which might have been set by autocomplete
