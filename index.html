@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        .dark-mode {
+            color-scheme: dark;
+        }
+        /* Scrollbar styles */
+        .scrollbar-thin { scrollbar-width: thin; }
+        .scrollbar-thumb-primary::-webkit-scrollbar-thumb {
+            background-color: #4299e1;
+            border-radius: 20px;
+            border: 3px solid transparent;
+        }
+        .scrollbar-track-gray-200::-webkit-scrollbar-track { background: #e2e8f0; }
+        .dark .scrollbar-track-gray-800::-webkit-scrollbar-track { background: #2d3748; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4299e1',
+                        'primary-dark': '#3182ce',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <nav class="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-2 text-2xl font-bold text-primary">
+                    <span>☀️</span>
+                    <span>WeatherNow</span>
+                </div>
+                <ul class="hidden md:flex gap-8 items-center">
+                    <li><a href="#home" class="hover:text-primary transition-colors duration-300">Home</a></li>
+                    <li><a href="#forecast" class="hover:text-primary transition-colors duration-300">Forecast</a></li>
+                    <li>
+                        <a href="#" onclick="getLocationWeather()" class="hover:text-primary transition-colors duration-300 flex items-center gap-1">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            My Location
+                        </a>
+                    </li>
+                </ul>
+                <button onclick="toggleTheme()" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-full transition-all duration-300 hover:scale-105">
+                    <span id="themeText">☀️ Light Mode</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="home" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex justify-center my-8">
+            <div class="w-full max-w-2xl relative">
+                <div class="w-full bg-white dark:bg-gray-800 rounded-full shadow-xl flex items-center p-2 transition-colors duration-300">
+                    <input 
+                        type="text" 
+                        id="cityInput" 
+                        placeholder="Search for a city..." 
+                        class="flex-1 px-6 py-3 bg-transparent outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500"
+                        autocomplete="off" >
+                    <button onclick="searchCity()" class="bg-primary hover:bg-primary-dark text-white w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105">
+                        <span class="text-xl">🔍</span>
+                    </button>
+                </div>
+                <div id="suggestionsBox" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hidden">
+                    </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 my-8 text-center transition-colors duration-300">
+            <div class="mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold mb-2" id="cityName">Loading...</h1>
+                <p class="text-gray-600 dark:text-gray-400" id="currentDate">---</p>
+            </div>
+            <div class="flex flex-col md:flex-row justify-center items-center gap-8 my-8">
+                <div class="text-8xl md:text-9xl float-animation" id="mainWeatherIcon">☀️</div>
+                <div class="text-6xl md:text-7xl font-bold" id="mainTemp">-°C</div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-8">
+                <div class="bg-gray-100 dark:bg-gray-900 rounded-2xl p-6 transition-colors duration-300">
+                    <div class="text-gray-600 dark:text-gray-400 text-sm mb-2">Feels Like</div>
+                    <div class="text-2xl font-bold" id="feelsLike">-°C</div>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-900 rounded-2xl p-6 transition-colors duration-300">
+                    <div class="text-gray-600 dark:text-gray-400 text-sm mb-2">Humidity</div>
+                    <div class="text-2xl font-bold" id="humidity">-%</div>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-900 rounded-2xl p-6 transition-colors duration-300">
+                    <div class="text-gray-600 dark:text-gray-400 text-sm mb-2">Wind Speed</div>
+                    <div class="text-2xl font-bold" id="windSpeed">- km/h</div>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-900 rounded-2xl p-6 transition-colors duration-300">
+                    <div class="text-gray-600 dark:text-gray-400 text-sm mb-2">Precipitation</div>
+                    <div class="text-2xl font-bold" id="precipitation">-%</div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-3xl font-bold my-12">Hourly Forecast</h2>
+        <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-primary scrollbar-track-gray-200 dark:scrollbar-track-gray-800" id="hourlyForecast">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 min-w-[120px] text-center shadow-lg"><div class="font-bold text-gray-600 dark:text-gray-400 mb-4">...</div><div class="text-5xl my-4">...</div><div class="text-xl font-bold">...</div></div>
+        </div>
+
+        <h2 id="forecast" class="text-3xl font-bold my-12">7-Day Forecast</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="dailyForecast">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg flex justify-between items-center"><div class="flex items-center gap-4"><div class="text-5xl">...</div><div class="text-xl font-bold">...</div></div><div class="text-right"><div class="text-2xl font-bold">...</div><div class="text-gray-600 dark:text-gray-400 text-lg">...</div></div></div>
+        </div>
+    </div>
+
+    <footer class="bg-gray-800 border-t border-gray-700 py-12 px-4">
+        <div class="max-w-7xl mx-auto flex flex-col items-center gap-8 sm:flex-row sm:relative sm:justify-center">
+            <div class="flex flex-col items-center gap-4">
+                <p class="text-gray-400 text-sm text-center">&copy; 2025 Ahnaf Tajwar Suchak. All rights reserved.</p>
+                <div class="flex justify-center space-x-6">
+                    <a target="_blank" href="https://github.com/atsuchak" class="text-gray-400 hover:text-white transition-colors" title="GitHub"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a>
+                    <a target="_blank" href="https://www.linkedin.com/in/atsuchak/" class="text-gray-400 hover:text-white transition-colors" title="LinkedIn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+                    <a target="_blank" href="mailto:ahnaftajwarsuchak@gmail.com" class="text-gray-400 hover:text-white transition-colors" title="Email"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></a>
+                </div>
+            </div>
+            <button onclick="scrollToSection('home')" class="bg-gray-700 hover:bg-primary text-gray-400 hover:text-white p-3 rounded-lg transition-all sm:absolute sm:right-0 sm:top-1/2 sm:-translate-y-1/2" title="Scroll to top"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg></button>
+        </div>
+    </footer>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
